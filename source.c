@@ -9,6 +9,8 @@
 
 #define USERINFO(x) ((struct userinfo *)x)
 
+extern void config_load(const char *path, const char *group, GOptionEntry entries[]);
+
 struct userinfo {
 	GtkWidget *user_revealer;
 	GtkWidget *user_box;
@@ -18,6 +20,17 @@ struct userinfo {
 
 static ActUserManager *act_manager = NULL;
 static ActUser *act_user = NULL;
+
+static gboolean round_image = TRUE;
+static gboolean vertical_layout = TRUE;
+static gboolean under_clock = FALSE;
+
+static GOptionEntry userinfo_entries[] = {
+	{ "round-image", 0, 0, G_OPTION_ARG_NONE, &round_image, NULL, NULL },
+	{ "vertical-layout", 0, 0, G_OPTION_ARG_NONE, &vertical_layout, NULL, NULL },
+	{ "under-clock", 0, 0, G_OPTION_ARG_NONE, &under_clock, NULL, NULL },
+	{ NULL },
+};
 
 static void window_set_userinfo(ActUser* user, struct Window *ctx) {
 	const char *name = act_user_get_real_name(user);
@@ -47,9 +60,11 @@ static void window_set_userinfo(ActUser* user, struct Window *ctx) {
 	cairo_t *cr = cairo_create(surface);
 	gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
 
-	// Makes the image circular
-	cairo_arc(cr, h_size, h_size, h_size, 0, 2 * G_PI);
-	cairo_clip(cr);
+	if(round_image) {
+		// Makes the image circular
+		cairo_arc(cr, h_size, h_size, h_size, 0, 2 * G_PI);
+		cairo_clip(cr);
+	}
 	cairo_paint(cr);
 
 	gtk_image_set_from_surface(GTK_IMAGE(USERINFO(ctx->module_data)->user_icon), surface);
@@ -99,9 +114,10 @@ static void setup_userinfo(struct Window *ctx) {
 	gtk_revealer_set_reveal_child((GtkRevealer *)USERINFO(ctx->module_data)->user_revealer, TRUE);
 	gtk_revealer_set_transition_type(GTK_REVEALER(USERINFO(ctx->module_data)->user_revealer), GTK_REVEALER_TRANSITION_TYPE_NONE);
 	gtk_container_add(GTK_CONTAINER(ctx->window_box), USERINFO(ctx->module_data)->user_revealer);
-	gtk_box_reorder_child(GTK_BOX(ctx->window_box), USERINFO(ctx->module_data)->user_revealer, 0);
+	gtk_box_reorder_child(GTK_BOX(ctx->window_box), USERINFO(ctx->module_data)->user_revealer, under_clock);
 
-	USERINFO(ctx->module_data)->user_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	GtkOrientation o = vertical_layout ? GTK_ORIENTATION_VERTICAL : GTK_ORIENTATION_HORIZONTAL;
+	USERINFO(ctx->module_data)->user_box = gtk_box_new(o, 5);
 	gtk_widget_set_halign(USERINFO(ctx->module_data)->user_box, GTK_ALIGN_CENTER);
 	gtk_widget_set_name(USERINFO(ctx->module_data)->user_box, "user-box");
 	gtk_container_add(GTK_CONTAINER(USERINFO(ctx->module_data)->user_revealer), USERINFO(ctx->module_data)->user_box);
@@ -122,16 +138,14 @@ static void setup_userinfo(struct Window *ctx) {
 	gtk_widget_show_all(USERINFO(ctx->module_data)->user_revealer);
 }
 
-const gchar *g_module_check_init(GModule *m) {
-	return NULL;
-}
-
 void g_module_unload(GModule *m) {
 	g_object_unref(act_user);
 	g_object_unref(act_manager);
 }
 
 void on_activation(struct GtkLock *gtklock) {
+	config_load(gtklock->config_path, "userinfo", userinfo_entries);
+
 	init_user_manager(gtklock);
 
 	GtkCssProvider *provider = gtk_css_provider_new();
