@@ -7,7 +7,8 @@
 
 #include "gtklock-module.h"
 
-#define USERINFO(x) ((struct userinfo *)x)
+#define MODULE_DATA(x) (x->module_data[self_id])
+#define USERINFO(x) ((struct userinfo *)MODULE_DATA(x))
 
 extern void config_load(const char *path, const char *group, GOptionEntry entries[]);
 
@@ -17,6 +18,8 @@ struct userinfo {
 	GtkWidget *user_icon;
 	GtkWidget *user_name;
 };
+
+static int self_id;
 
 static ActUserManager *act_manager = NULL;
 static ActUser *act_user = NULL;
@@ -36,13 +39,13 @@ static void window_set_userinfo(ActUser* user, struct Window *ctx) {
 	const char *name = act_user_get_real_name(user);
 	if(name == NULL) {
 		g_warning("User name not found!\n");
-		gtk_container_remove(GTK_CONTAINER(ctx->window_box), USERINFO(ctx->module_data)->user_name);
-	} else gtk_label_set_text(GTK_LABEL(USERINFO(ctx->module_data)->user_name), name);
+		gtk_container_remove(GTK_CONTAINER(ctx->window_box), USERINFO(ctx)->user_name);
+	} else gtk_label_set_text(GTK_LABEL(USERINFO(ctx)->user_name), name);
 
 	const char *path = act_user_get_icon_file(user);
 	if(path == NULL) {
 		g_warning("User image not found!\n");
-		gtk_container_remove(GTK_CONTAINER(ctx->window_box), USERINFO(ctx->module_data)->user_icon);
+		gtk_container_remove(GTK_CONTAINER(ctx->window_box), USERINFO(ctx)->user_icon);
 		return;
 	}
 	const int size = 96;
@@ -52,7 +55,7 @@ static void window_set_userinfo(ActUser* user, struct Window *ctx) {
 	GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_size(path, size, size, &error);
 	if(pixbuf == NULL) {
 		g_warning("User image error: %s\n", error->message);
-		gtk_container_remove(GTK_CONTAINER(ctx->window_box), USERINFO(ctx->module_data)->user_icon);
+		gtk_container_remove(GTK_CONTAINER(ctx->window_box), USERINFO(ctx)->user_icon);
 		return;
 	}
 
@@ -67,7 +70,7 @@ static void window_set_userinfo(ActUser* user, struct Window *ctx) {
 	}
 	cairo_paint(cr);
 
-	gtk_image_set_from_surface(GTK_IMAGE(USERINFO(ctx->module_data)->user_icon), surface);
+	gtk_image_set_from_surface(GTK_IMAGE(USERINFO(ctx)->user_icon), surface);
 }
 
 static void window_user_loaded(ActUser* user, struct Window *ctx) {
@@ -101,41 +104,41 @@ static void init_user_manager(struct GtkLock *gtklock) {
 }
 
 static void setup_userinfo(struct Window *ctx) {
-	if(ctx->module_data != NULL) {
-		gtk_widget_destroy(USERINFO(ctx->module_data)->user_revealer);
-		g_free(ctx->module_data);
-		ctx->module_data = NULL;
+	if(MODULE_DATA(ctx) != NULL) {
+		gtk_widget_destroy(USERINFO(ctx)->user_revealer);
+		g_free(MODULE_DATA(ctx));
+		MODULE_DATA(ctx) = NULL;
 	}
-	ctx->module_data = g_malloc(sizeof(struct userinfo));
+	MODULE_DATA(ctx) = g_malloc(sizeof(struct userinfo));
 
-	USERINFO(ctx->module_data)->user_revealer = gtk_revealer_new();
-	gtk_widget_set_halign(USERINFO(ctx->module_data)->user_revealer, GTK_ALIGN_CENTER);
-	gtk_widget_set_name(USERINFO(ctx->module_data)->user_revealer, "user-revealer");
-	gtk_revealer_set_reveal_child((GtkRevealer *)USERINFO(ctx->module_data)->user_revealer, TRUE);
-	gtk_revealer_set_transition_type(GTK_REVEALER(USERINFO(ctx->module_data)->user_revealer), GTK_REVEALER_TRANSITION_TYPE_NONE);
-	gtk_container_add(GTK_CONTAINER(ctx->window_box), USERINFO(ctx->module_data)->user_revealer);
-	gtk_box_reorder_child(GTK_BOX(ctx->window_box), USERINFO(ctx->module_data)->user_revealer, under_clock);
+	USERINFO(ctx)->user_revealer = gtk_revealer_new();
+	gtk_widget_set_halign(USERINFO(ctx)->user_revealer, GTK_ALIGN_CENTER);
+	gtk_widget_set_name(USERINFO(ctx)->user_revealer, "user-revealer");
+	gtk_revealer_set_reveal_child((GtkRevealer *)USERINFO(ctx)->user_revealer, TRUE);
+	gtk_revealer_set_transition_type(GTK_REVEALER(USERINFO(ctx)->user_revealer), GTK_REVEALER_TRANSITION_TYPE_NONE);
+	gtk_container_add(GTK_CONTAINER(ctx->window_box), USERINFO(ctx)->user_revealer);
+	gtk_box_reorder_child(GTK_BOX(ctx->window_box), USERINFO(ctx)->user_revealer, under_clock);
 
 	GtkOrientation o = vertical_layout ? GTK_ORIENTATION_VERTICAL : GTK_ORIENTATION_HORIZONTAL;
-	USERINFO(ctx->module_data)->user_box = gtk_box_new(o, 5);
-	gtk_widget_set_halign(USERINFO(ctx->module_data)->user_box, GTK_ALIGN_CENTER);
-	gtk_widget_set_name(USERINFO(ctx->module_data)->user_box, "user-box");
-	gtk_container_add(GTK_CONTAINER(USERINFO(ctx->module_data)->user_revealer), USERINFO(ctx->module_data)->user_box);
+	USERINFO(ctx)->user_box = gtk_box_new(o, 5);
+	gtk_widget_set_halign(USERINFO(ctx)->user_box, GTK_ALIGN_CENTER);
+	gtk_widget_set_name(USERINFO(ctx)->user_box, "user-box");
+	gtk_container_add(GTK_CONTAINER(USERINFO(ctx)->user_revealer), USERINFO(ctx)->user_box);
 
 	// Profile picture
-	USERINFO(ctx->module_data)->user_icon = gtk_image_new();
-	gtk_widget_set_name(USERINFO(ctx->module_data)->user_icon, "user-image");
-	g_object_set(USERINFO(ctx->module_data)->user_icon, "margin-bottom", 10, NULL);
-	gtk_container_add(GTK_CONTAINER(USERINFO(ctx->module_data)->user_box), USERINFO(ctx->module_data)->user_icon);
+	USERINFO(ctx)->user_icon = gtk_image_new();
+	gtk_widget_set_name(USERINFO(ctx)->user_icon, "user-image");
+	g_object_set(USERINFO(ctx)->user_icon, "margin-bottom", 10, NULL);
+	gtk_container_add(GTK_CONTAINER(USERINFO(ctx)->user_box), USERINFO(ctx)->user_icon);
 
 	// Profile name
-	USERINFO(ctx->module_data)->user_name = gtk_label_new(NULL);
-	gtk_widget_set_name(USERINFO(ctx->module_data)->user_name, "user-name");
-	g_object_set(USERINFO(ctx->module_data)->user_name, "margin-bottom", 10, NULL);
-	gtk_container_add(GTK_CONTAINER(USERINFO(ctx->module_data)->user_box), USERINFO(ctx->module_data)->user_name);
+	USERINFO(ctx)->user_name = gtk_label_new(NULL);
+	gtk_widget_set_name(USERINFO(ctx)->user_name, "user-name");
+	g_object_set(USERINFO(ctx)->user_name, "margin-bottom", 10, NULL);
+	gtk_container_add(GTK_CONTAINER(USERINFO(ctx)->user_box), USERINFO(ctx)->user_name);
 
 	window_set_userinfo(act_user, ctx);
-	gtk_widget_show_all(USERINFO(ctx->module_data)->user_revealer);
+	gtk_widget_show_all(USERINFO(ctx)->user_revealer);
 }
 
 void g_module_unload(GModule *m) {
@@ -143,9 +146,9 @@ void g_module_unload(GModule *m) {
 	g_object_unref(act_manager);
 }
 
-void on_activation(struct GtkLock *gtklock) {
+void on_activation(struct GtkLock *gtklock, int id) {
+	self_id = id;
 	config_load(gtklock->config_path, "userinfo", userinfo_entries);
-
 	init_user_manager(gtklock);
 
 	GtkCssProvider *provider = gtk_css_provider_new();
@@ -171,28 +174,28 @@ void on_activation(struct GtkLock *gtklock) {
 void on_focus_change(struct GtkLock *gtklock, struct Window *win, struct Window *old) {
 	setup_userinfo(win);
 	if(gtklock->hidden)
-		gtk_revealer_set_reveal_child(GTK_REVEALER(USERINFO(win->module_data)->user_revealer), FALSE);
+		gtk_revealer_set_reveal_child(GTK_REVEALER(USERINFO(win)->user_revealer), FALSE);
 	if(old != NULL && win != old)
-		gtk_revealer_set_reveal_child(GTK_REVEALER(USERINFO(old->module_data)->user_revealer), FALSE);
+		gtk_revealer_set_reveal_child(GTK_REVEALER(USERINFO(old)->user_revealer), FALSE);
 }
 
 void on_window_empty(struct GtkLock *gtklock, struct Window *ctx) {
-	if(ctx->module_data != NULL) {
-		g_free(ctx->module_data);
-		ctx->module_data = NULL;
+	if(MODULE_DATA(ctx) != NULL) {
+		g_free(MODULE_DATA(ctx));
+		MODULE_DATA(ctx) = NULL;
 	}
 }
 
 void on_idle_hide(struct GtkLock *gtklock) {
 	if(gtklock->focused_window) {
-		GtkRevealer *revealer = GTK_REVEALER(USERINFO(gtklock->focused_window->module_data)->user_revealer);	
+		GtkRevealer *revealer = GTK_REVEALER(USERINFO(gtklock->focused_window)->user_revealer);	
 		gtk_revealer_set_reveal_child(revealer, FALSE);
 	}
 }
 
 void on_idle_show(struct GtkLock *gtklock) {
 	if(gtklock->focused_window) {
-		GtkRevealer *revealer = GTK_REVEALER(USERINFO(gtklock->focused_window->module_data)->user_revealer);	
+		GtkRevealer *revealer = GTK_REVEALER(USERINFO(gtklock->focused_window)->user_revealer);	
 		gtk_revealer_set_reveal_child(revealer, TRUE);
 	}
 }

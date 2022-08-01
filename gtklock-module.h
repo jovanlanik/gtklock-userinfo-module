@@ -21,7 +21,7 @@ struct Window {
 
 	gulong enter_notify_handler;
 
-	void *module_data;
+	void *module_data[];
 };
 
 struct GtkLock {
@@ -44,11 +44,13 @@ struct GtkLock {
 	char *time;
 	char *time_format;
 	char *config_path;
+
+	GArray *modules;
 };
 
 const gchar *g_module_check_init(GModule *m);
 void g_module_unload(GModule *m);
-void on_activation(struct GtkLock *gtklock);
+void on_activation(struct GtkLock *gtklock, int id);
 void on_output_change(struct GtkLock *gtklock);
 void on_focus_change(struct GtkLock *gtklock, struct Window *win, struct Window *old);
 void on_window_empty(struct GtkLock *gtklock, struct Window *ctx);
