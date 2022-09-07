@@ -19,6 +19,8 @@ struct userinfo {
 	GtkWidget *user_name;
 };
 
+const gchar module_version[] = "v1.3.5";
+
 static int self_id;
 
 static ActUserManager *act_manager = NULL;
