@@ -19,7 +19,7 @@ struct userinfo {
 	GtkWidget *user_name;
 };
 
-const gchar module_version[] = "v1.3.5";
+const gchar module_version[] = "v1.3.6";
 
 static int self_id;
 
@@ -116,7 +116,7 @@ static void setup_userinfo(struct Window *ctx) {
 	USERINFO(ctx)->user_revealer = gtk_revealer_new();
 	gtk_widget_set_halign(USERINFO(ctx)->user_revealer, GTK_ALIGN_CENTER);
 	gtk_widget_set_name(USERINFO(ctx)->user_revealer, "user-revealer");
-	gtk_revealer_set_reveal_child((GtkRevealer *)USERINFO(ctx)->user_revealer, TRUE);
+	gtk_revealer_set_reveal_child(GTK_REVEALER(USERINFO(ctx)->user_revealer), TRUE);
 	gtk_revealer_set_transition_type(GTK_REVEALER(USERINFO(ctx)->user_revealer), GTK_REVEALER_TRANSITION_TYPE_NONE);
 	gtk_container_add(GTK_CONTAINER(ctx->window_box), USERINFO(ctx)->user_revealer);
 	gtk_box_reorder_child(GTK_BOX(ctx->window_box), USERINFO(ctx)->user_revealer, under_clock);
