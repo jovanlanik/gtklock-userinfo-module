@@ -40,13 +40,13 @@ static GOptionEntry userinfo_entries[] = {
 static void window_set_userinfo(ActUser* user, struct Window *ctx) {
 	const char *name = act_user_get_real_name(user);
 	if(name == NULL) {
-		g_warning("User name not found!\n");
+		g_warning("userinfo-module: User name not found");
 		gtk_container_remove(GTK_CONTAINER(ctx->window_box), USERINFO(ctx)->user_name);
 	} else gtk_label_set_text(GTK_LABEL(USERINFO(ctx)->user_name), name);
 
 	const char *path = act_user_get_icon_file(user);
 	if(path == NULL) {
-		g_warning("User image not found!\n");
+		g_warning("userinfo-module: User image not found");
 		gtk_container_remove(GTK_CONTAINER(ctx->window_box), USERINFO(ctx)->user_icon);
 		return;
 	}
@@ -56,7 +56,7 @@ static void window_set_userinfo(ActUser* user, struct Window *ctx) {
 	GError *error = NULL;
 	GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_size(path, size, size, &error);
 	if(pixbuf == NULL) {
-		g_warning("User image error: %s\n", error->message);
+		g_warning("userinfo-module: User image error: %s", error->message);
 		gtk_container_remove(GTK_CONTAINER(ctx->window_box), USERINFO(ctx)->user_icon);
 		return;
 	}
@@ -94,7 +94,7 @@ static void gtklock_user_loaded(ActUser* user, GParamSpec *spec, struct GtkLock 
 static void init_user_manager(struct GtkLock *gtklock) {
 	if(act_manager == NULL) act_manager = act_user_manager_get_default();
 	if(act_user_manager_no_service(act_manager)) {
-		g_warning("AccountsService is not running!\n");
+		g_warning("userinfo-module: AccountsService is not running");
 		return;
 	}
 	if(act_user == NULL) {
