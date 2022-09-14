@@ -19,6 +19,7 @@ struct userinfo {
 	GtkWidget *user_name;
 };
 
+const gchar module_name[] = "userinfo";
 const gchar module_version[] = "v1.3.6";
 
 static int self_id;
@@ -30,7 +31,7 @@ static gboolean round_image = TRUE;
 static gboolean vertical_layout = TRUE;
 static gboolean under_clock = FALSE;
 
-static GOptionEntry userinfo_entries[] = {
+static GOptionEntry module_entries[] = {
 	{ "round-image", 0, 0, G_OPTION_ARG_NONE, &round_image, NULL, NULL },
 	{ "vertical-layout", 0, 0, G_OPTION_ARG_NONE, &vertical_layout, NULL, NULL },
 	{ "under-clock", 0, 0, G_OPTION_ARG_NONE, &under_clock, NULL, NULL },
@@ -119,7 +120,12 @@ static void setup_userinfo(struct Window *ctx) {
 	gtk_revealer_set_reveal_child(GTK_REVEALER(USERINFO(ctx)->user_revealer), TRUE);
 	gtk_revealer_set_transition_type(GTK_REVEALER(USERINFO(ctx)->user_revealer), GTK_REVEALER_TRANSITION_TYPE_NONE);
 	gtk_container_add(GTK_CONTAINER(ctx->window_box), USERINFO(ctx)->user_revealer);
-	gtk_box_reorder_child(GTK_BOX(ctx->window_box), USERINFO(ctx)->user_revealer, under_clock);
+
+	GValue val = G_VALUE_INIT;
+	g_value_init(&val, G_TYPE_INT);
+	gtk_container_child_get_property(GTK_CONTAINER(ctx->window_box), ctx->clock_label, "position", &val);
+	gint pos = g_value_get_int(&val);
+	gtk_box_reorder_child(GTK_BOX(ctx->window_box), USERINFO(ctx)->user_revealer, pos + under_clock);
 
 	GtkOrientation o = vertical_layout ? GTK_ORIENTATION_VERTICAL : GTK_ORIENTATION_HORIZONTAL;
 	USERINFO(ctx)->user_box = gtk_box_new(o, 5);
@@ -150,7 +156,7 @@ void g_module_unload(GModule *m) {
 
 void on_activation(struct GtkLock *gtklock, int id) {
 	self_id = id;
-	config_load(gtklock->config_path, "userinfo", userinfo_entries);
+	config_load(gtklock->config_path, module_name, module_entries);
 	init_user_manager(gtklock);
 
 	GtkCssProvider *provider = gtk_css_provider_new();
