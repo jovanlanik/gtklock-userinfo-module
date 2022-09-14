@@ -27,13 +27,13 @@ static int self_id;
 static ActUserManager *act_manager = NULL;
 static ActUser *act_user = NULL;
 
-static gboolean round_image = TRUE;
-static gboolean vertical_layout = TRUE;
+static gboolean no_round_image = FALSE;
+static gboolean horizontal_layout = FALSE;
 static gboolean under_clock = FALSE;
 
-static GOptionEntry module_entries[] = {
-	{ "round-image", 0, 0, G_OPTION_ARG_NONE, &round_image, NULL, NULL },
-	{ "vertical-layout", 0, 0, G_OPTION_ARG_NONE, &vertical_layout, NULL, NULL },
+GOptionEntry module_entries[] = {
+	{ "no-round-image", 0, 0, G_OPTION_ARG_NONE, &no_round_image, NULL, NULL },
+	{ "horizontal-layout", 0, 0, G_OPTION_ARG_NONE, &horizontal_layout, NULL, NULL },
 	{ "under-clock", 0, 0, G_OPTION_ARG_NONE, &under_clock, NULL, NULL },
 	{ NULL },
 };
@@ -66,7 +66,7 @@ static void window_set_userinfo(ActUser* user, struct Window *ctx) {
 	cairo_t *cr = cairo_create(surface);
 	gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
 
-	if(round_image) {
+	if(!no_round_image) {
 		// Makes the image circular
 		cairo_arc(cr, h_size, h_size, h_size, 0, 2 * G_PI);
 		cairo_clip(cr);
@@ -127,7 +127,7 @@ static void setup_userinfo(struct Window *ctx) {
 	gint pos = g_value_get_int(&val);
 	gtk_box_reorder_child(GTK_BOX(ctx->window_box), USERINFO(ctx)->user_revealer, pos + under_clock);
 
-	GtkOrientation o = vertical_layout ? GTK_ORIENTATION_VERTICAL : GTK_ORIENTATION_HORIZONTAL;
+	GtkOrientation o = horizontal_layout ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL ;
 	USERINFO(ctx)->user_box = gtk_box_new(o, 5);
 	gtk_widget_set_halign(USERINFO(ctx)->user_box, GTK_ALIGN_CENTER);
 	gtk_widget_set_name(USERINFO(ctx)->user_box, "user-box");
@@ -156,7 +156,7 @@ void g_module_unload(GModule *m) {
 
 void on_activation(struct GtkLock *gtklock, int id) {
 	self_id = id;
-	config_load(gtklock->config_path, module_name, module_entries);
+
 	init_user_manager(gtklock);
 
 	GtkCssProvider *provider = gtk_css_provider_new();
