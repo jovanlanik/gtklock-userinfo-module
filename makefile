@@ -32,4 +32,4 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/lib/$(NAME)
 
 $(NAME): $(OBJ)
-	$(LINK.c) -shared $(LDFLAGS) $(LDLIBS) $(OBJ) -o $@
+	$(LINK.c) -shared $^ $(LDLIBS) -o $@
