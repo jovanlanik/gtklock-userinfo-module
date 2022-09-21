@@ -20,7 +20,7 @@ struct userinfo {
 };
 
 const gchar module_name[] = "userinfo";
-const gchar module_version[] = "v1.3.6";
+const gchar module_version[] = "v1.3.7";
 
 static int self_id;
 
