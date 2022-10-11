@@ -5,8 +5,8 @@
 
 NAME := userinfo-module.so
 
-PREFIX ?= /usr/local
-INSTALL ?= install
+PREFIX = /usr/local
+INSTALL = install
 
 LIBS := gtk+-3.0 gmodule-export-2.0 accountsservice
 CFLAGS += -std=c11 -fPIC $(shell pkg-config --cflags $(LIBS))

@@ -11,6 +11,7 @@ struct Window {
 	GtkWidget *window;
 	GtkWidget *overlay;
 	GtkWidget *window_box;
+	GtkWidget *body_revealer;
 	GtkWidget *body_grid;
 	GtkWidget *input_label;
 	GtkWidget *input_field;
@@ -54,8 +55,8 @@ void g_module_unload(GModule *m);
 void on_activation(struct GtkLock *gtklock, int id);
 void on_output_change(struct GtkLock *gtklock);
 void on_focus_change(struct GtkLock *gtklock, struct Window *win, struct Window *old);
-void on_window_empty(struct GtkLock *gtklock, struct Window *ctx);
-void on_body_empty(struct GtkLock *gtklock, struct Window *ctx);
+void on_window_create(struct GtkLock *gtklock, struct Window *win);
+void on_window_destroy(struct GtkLock *gtklock, struct Window *win);
 
 /*
 

@@ -20,7 +20,8 @@ struct userinfo {
 };
 
 const gchar module_name[] = "userinfo";
-const gchar module_version[] = "v1.3.7";
+const guint module_major_version = 2;
+const guint module_minor_version = 0;
 
 static int self_id;
 
@@ -52,7 +53,7 @@ static void window_set_userinfo(ActUser* user, struct Window *ctx) {
 		return;
 	}
 	const int size = 96;
-	const int h_size = size / 2;
+	const int half_size = size / 2;
 
 	GError *error = NULL;
 	GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_size(path, size, size, &error);
@@ -68,7 +69,7 @@ static void window_set_userinfo(ActUser* user, struct Window *ctx) {
 
 	if(!no_round_image) {
 		// Makes the image circular
-		cairo_arc(cr, h_size, h_size, h_size, 0, 2 * G_PI);
+		cairo_arc(cr, half_size, half_size, half_size, 0, 2 * G_PI);
 		cairo_clip(cr);
 	}
 	cairo_paint(cr);
@@ -187,7 +188,7 @@ void on_focus_change(struct GtkLock *gtklock, struct Window *win, struct Window 
 		gtk_revealer_set_reveal_child(GTK_REVEALER(USERINFO(old)->user_revealer), FALSE);
 }
 
-void on_window_empty(struct GtkLock *gtklock, struct Window *ctx) {
+void on_window_destroy(struct GtkLock *gtklock, struct Window *ctx) {
 	if(MODULE_DATA(ctx) != NULL) {
 		g_free(MODULE_DATA(ctx));
 		MODULE_DATA(ctx) = NULL;
