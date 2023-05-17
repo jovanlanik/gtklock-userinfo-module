@@ -31,11 +31,13 @@ static ActUser *act_user = NULL;
 static gboolean no_round_image = FALSE;
 static gboolean horizontal_layout = FALSE;
 static gboolean under_clock = FALSE;
+static guint size = 96;
 
 GOptionEntry module_entries[] = {
 	{ "no-round-image", 0, 0, G_OPTION_ARG_NONE, &no_round_image, NULL, NULL },
 	{ "horizontal-layout", 0, 0, G_OPTION_ARG_NONE, &horizontal_layout, NULL, NULL },
 	{ "under-clock", 0, 0, G_OPTION_ARG_NONE, &under_clock, NULL, NULL },
+	{ "image-size", 0, 0, G_OPTION_ARG_INT, &size, NULL, NULL },
 	{ NULL },
 };
 
@@ -52,7 +54,10 @@ static void window_set_userinfo(ActUser* user, struct Window *ctx) {
 		gtk_container_remove(GTK_CONTAINER(ctx->window_box), USERINFO(ctx)->user_icon);
 		return;
 	}
-	const int size = 96;
+	if (!size) {
+		g_warning("userinfo-module: Invalid image size: %d, using default value", size);
+		size = 96;
+	}
 	const int half_size = size / 2;
 
 	GError *error = NULL;
