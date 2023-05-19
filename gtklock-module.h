@@ -55,6 +55,8 @@ void g_module_unload(GModule *m);
 void on_activation(struct GtkLock *gtklock, int id);
 void on_output_change(struct GtkLock *gtklock);
 void on_focus_change(struct GtkLock *gtklock, struct Window *win, struct Window *old);
+void on_idle_hide(struct GtkLock *gtklock);
+void on_idle_show(struct GtkLock *gtklock);
 void on_window_create(struct GtkLock *gtklock, struct Window *win);
 void on_window_destroy(struct GtkLock *gtklock, struct Window *win);
 
