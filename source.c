@@ -31,13 +31,13 @@ static ActUser *act_user = NULL;
 static gboolean no_round_image = FALSE;
 static gboolean horizontal_layout = FALSE;
 static gboolean under_clock = FALSE;
-static guint size = 96;
+static gint image_size = 96;
 
 GOptionEntry module_entries[] = {
 	{ "no-round-image", 0, 0, G_OPTION_ARG_NONE, &no_round_image, NULL, NULL },
 	{ "horizontal-layout", 0, 0, G_OPTION_ARG_NONE, &horizontal_layout, NULL, NULL },
 	{ "under-clock", 0, 0, G_OPTION_ARG_NONE, &under_clock, NULL, NULL },
-	{ "image-size", 0, 0, G_OPTION_ARG_INT, &size, NULL, NULL },
+	{ "image-size", 0, 0, G_OPTION_ARG_INT, &image_size, NULL, NULL },
 	{ NULL },
 };
 
@@ -54,31 +54,31 @@ static void window_set_userinfo(ActUser* user, struct Window *ctx) {
 		gtk_container_remove(GTK_CONTAINER(ctx->window_box), USERINFO(ctx)->user_icon);
 		return;
 	}
-	if (!size) {
-		g_warning("userinfo-module: Invalid image size: %d, using default value", size);
-		size = 96;
+	if(image_size < 0) {
+		g_warning("userinfo-module: Invalid image size: %d, using default value", image_size);
+		image_size = 96;
 	}
-	const int half_size = size / 2;
 
 	GError *error = NULL;
-	GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_size(path, size, size, &error);
+	GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_size(path, image_size, image_size, &error);
 	if(pixbuf == NULL) {
 		g_warning("userinfo-module: User image error: %s", error->message);
 		gtk_container_remove(GTK_CONTAINER(ctx->window_box), USERINFO(ctx)->user_icon);
 		return;
 	}
 
-	cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, size, size);
+	cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, image_size, image_size);
 	cairo_t *cr = cairo_create(surface);
 	gdk_cairo_set_source_pixbuf(cr, pixbuf, 0, 0);
 
+	// Makes the image circular
 	if(!no_round_image) {
-		// Makes the image circular
+		const int half_size = image_size / 2;
 		cairo_arc(cr, half_size, half_size, half_size, 0, 2 * G_PI);
 		cairo_clip(cr);
 	}
-	cairo_paint(cr);
 
+	cairo_paint(cr);
 	gtk_image_set_from_surface(GTK_IMAGE(USERINFO(ctx)->user_icon), surface);
 }
 
@@ -178,8 +178,11 @@ void on_activation(struct GtkLock *gtklock, int id) {
 		g_warning("Style loading failed: %s", err->message);
 		g_error_free(err);
 	} else {
-		gtk_style_context_add_provider_for_screen(gdk_screen_get_default(),
-			GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+		gtk_style_context_add_provider_for_screen(
+			gdk_screen_get_default(),
+			GTK_STYLE_PROVIDER(provider),
+			GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
+		);
 	}
 
 	g_object_unref(provider);
