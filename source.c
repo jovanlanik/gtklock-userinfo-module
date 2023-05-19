@@ -21,7 +21,7 @@ struct userinfo {
 
 const gchar module_name[] = "userinfo";
 const guint module_major_version = 2;
-const guint module_minor_version = 0;
+const guint module_minor_version = 1;
 
 static int self_id;
 
