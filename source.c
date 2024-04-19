@@ -1,5 +1,5 @@
 // gtklock-userinfo-module
-// Copyright (c) 2022 Erik Reider, Jovan Lanik
+// Copyright (c) 2024 Erik Reider, Jovan Lanik
 
 // User info module
 
@@ -20,8 +20,8 @@ struct userinfo {
 };
 
 const gchar module_name[] = "userinfo";
-const guint module_major_version = 2;
-const guint module_minor_version = 1;
+const guint module_major_version = 3;
+const guint module_minor_version = 0;
 
 static int self_id;
 
@@ -90,12 +90,10 @@ static void window_user_loaded(ActUser* user, struct Window *ctx) {
 
 static void gtklock_set_userinfo(ActUser* user, struct GtkLock *gtklock) {
 	if(gtklock->focused_window != NULL) window_set_userinfo(user, gtklock->focused_window);
-	else if(!gtklock->use_layer_shell) window_set_userinfo(user, g_array_index(gtklock->windows, struct Window *, 0));
 }
 
 static void gtklock_user_loaded(ActUser* user, GParamSpec *spec, struct GtkLock *gtklock) {
 	if(gtklock->focused_window != NULL) window_user_loaded(user, gtklock->focused_window);
-	else if(!gtklock->use_layer_shell) window_user_loaded(user, g_array_index(gtklock->windows, struct Window *, 0));
 }
 
 static void init_user_manager(struct GtkLock *gtklock) {
@@ -103,8 +101,7 @@ static void init_user_manager(struct GtkLock *gtklock) {
 	if(act_user_manager_no_service(act_manager)) {
 		g_warning("userinfo-module: AccountsService is not running");
 		return;
-	}
-	if(act_user == NULL) {
+	} else if(act_user == NULL) {
 		const char *username = g_get_user_name();
 		act_user = act_user_manager_get_user(act_manager, username);
 		g_signal_connect(act_user, "notify::is-loaded", G_CALLBACK(gtklock_user_loaded), gtklock);

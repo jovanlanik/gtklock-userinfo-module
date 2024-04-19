@@ -1,5 +1,5 @@
 // gtklock-userinfo-module
-// Copyright (c) 2022 Jovan Lanik
+// Copyright (c) 2024 Jovan Lanik
 
 // Module header
 
@@ -21,13 +21,13 @@ struct Window {
 	GtkWidget *warning_label;
 	GtkWidget *clock_label;
 
-	gulong enter_notify_handler;
-
 	void *module_data[];
 };
 
 struct GtkLock {
 	GtkApplication *app;
+	void *lock;
+
 	GArray *windows;
 	GArray *messages;
 	GArray *errors;
@@ -39,13 +39,12 @@ struct GtkLock {
 	guint draw_clock_source;
 	guint idle_hide_source;
 
-	gboolean use_layer_shell;
-	gboolean use_input_inhibit;
 	gboolean use_idle_hide;
 
 	char *time;
 	char *time_format;
 	char *config_path;
+	char *layout_path;
 
 	GArray *modules;
 };
