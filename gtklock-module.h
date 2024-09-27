@@ -15,11 +15,14 @@ struct Window {
 	GtkWidget *body_grid;
 	GtkWidget *input_label;
 	GtkWidget *input_field;
+	GtkWidget *message_revealer;
+	GtkWidget *message_scrolled_window;
 	GtkWidget *message_box;
 	GtkWidget *unlock_button;
 	GtkWidget *error_label;
 	GtkWidget *warning_label;
 	GtkWidget *clock_label;
+	GtkWidget *date_label;
 
 	void *module_data[];
 };
@@ -27,6 +30,7 @@ struct Window {
 struct GtkLock {
 	GtkApplication *app;
 	void *lock;
+	pid_t parent;
 
 	GArray *windows;
 	GArray *messages;
@@ -36,15 +40,20 @@ struct GtkLock {
 	gboolean hidden;
 	guint idle_timeout;
 
-	guint draw_clock_source;
+	guint draw_time_source;
 	guint idle_hide_source;
 
+	gboolean follow_focus;
 	gboolean use_idle_hide;
 
 	char *time;
+	char *date;
 	char *time_format;
+	char *date_format;
 	char *config_path;
 	char *layout_path;
+	char *lock_command;
+	char *unlock_command;
 
 	GArray *modules;
 };
@@ -52,6 +61,7 @@ struct GtkLock {
 const gchar *g_module_check_init(GModule *m);
 void g_module_unload(GModule *m);
 void on_activation(struct GtkLock *gtklock, int id);
+void on_locked(struct GtkLock *gtklock);
 void on_output_change(struct GtkLock *gtklock);
 void on_focus_change(struct GtkLock *gtklock, struct Window *win, struct Window *old);
 void on_idle_hide(struct GtkLock *gtklock);
@@ -63,7 +73,7 @@ void on_window_destroy(struct GtkLock *gtklock, struct Window *win);
 
 MIT Licence
 
-Copyright (c) 2022 Jovan Lanik <jox969@gmail.com>
+Copyright (c) 2024 Jovan Lanik <jox969@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
