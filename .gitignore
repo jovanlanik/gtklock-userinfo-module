@@ -1,6 +1,1 @@
-/build/
-/.cache/
-/userinfo-module.so
-compile_flags.txt
-compile_commands.json
-*.o
+/builddir/
