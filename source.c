@@ -122,13 +122,11 @@ static void setup_userinfo(struct Window *ctx) {
 	gtk_widget_set_name(USERINFO(ctx)->user_revealer, "user-revealer");
 	gtk_revealer_set_reveal_child(GTK_REVEALER(USERINFO(ctx)->user_revealer), TRUE);
 	gtk_revealer_set_transition_type(GTK_REVEALER(USERINFO(ctx)->user_revealer), GTK_REVEALER_TRANSITION_TYPE_NONE);
-	gtk_container_add(GTK_CONTAINER(ctx->window_box), USERINFO(ctx)->user_revealer);
+	gtk_container_add(GTK_CONTAINER(ctx->info_box), USERINFO(ctx)->user_revealer);
 
-	GValue val = G_VALUE_INIT;
-	g_value_init(&val, G_TYPE_INT);
-	gtk_container_child_get_property(GTK_CONTAINER(ctx->window_box), ctx->clock_label, "position", &val);
-	gint pos = g_value_get_int(&val);
-	gtk_box_reorder_child(GTK_BOX(ctx->window_box), USERINFO(ctx)->user_revealer, pos + under_clock);
+	if(!under_clock) gtk_box_reorder_child(GTK_BOX(ctx->info_box), USERINFO(ctx)->user_revealer, 0);
+
+	//if(under_clock) g_object_set(USERINFO(ctx)->user_revealer, "margin-top", 10, NULL);
 
 	GtkOrientation o = horizontal_layout ? GTK_ORIENTATION_HORIZONTAL : GTK_ORIENTATION_VERTICAL ;
 	USERINFO(ctx)->user_box = gtk_box_new(o, 5);
@@ -139,13 +137,11 @@ static void setup_userinfo(struct Window *ctx) {
 	// Profile picture
 	USERINFO(ctx)->user_icon = gtk_image_new();
 	gtk_widget_set_name(USERINFO(ctx)->user_icon, "user-image");
-	g_object_set(USERINFO(ctx)->user_icon, "margin-bottom", 10, NULL);
 	gtk_container_add(GTK_CONTAINER(USERINFO(ctx)->user_box), USERINFO(ctx)->user_icon);
 
 	// Profile name
 	USERINFO(ctx)->user_name = gtk_label_new(NULL);
 	gtk_widget_set_name(USERINFO(ctx)->user_name, "user-name");
-	g_object_set(USERINFO(ctx)->user_name, "margin-bottom", 10, NULL);
 	gtk_container_add(GTK_CONTAINER(USERINFO(ctx)->user_box), USERINFO(ctx)->user_name);
 
 	window_set_userinfo(act_user, ctx);
