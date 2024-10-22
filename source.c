@@ -49,26 +49,37 @@ static void window_set_userinfo(ActUser* user, struct Window *ctx) {
 	const char *name = act_user_get_real_name(user);
 	if(name == NULL) {
 		g_warning("userinfo-module: User name not found");
-		gtk_container_remove(GTK_CONTAINER(ctx->window_box), USERINFO(ctx)->user_name);
-	} else gtk_label_set_text(GTK_LABEL(USERINFO(ctx)->user_name), name);
-
-	const char *path = act_user_get_icon_file(user);
-	if(path == NULL) {
-		g_warning("userinfo-module: User image not found");
-		gtk_container_remove(GTK_CONTAINER(ctx->window_box), USERINFO(ctx)->user_icon);
-		return;
+		name = act_user_get_user_name(user);
 	}
+	gtk_label_set_text(GTK_LABEL(USERINFO(ctx)->user_name), name);
+
 	if(image_size < 0) {
 		g_warning("userinfo-module: Invalid image size: %d, using default value", image_size);
 		image_size = 96;
 	}
 
-	GError *error = NULL;
-	GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_size(path, image_size, image_size, &error);
+	GdkPixbuf *pixbuf = NULL;
+
+	const char *path = act_user_get_icon_file(user);
+	if(path != NULL) {
+		GError *error = NULL;
+		pixbuf = gdk_pixbuf_new_from_file_at_size(path, image_size, image_size, &error);
+		if(error != NULL) {
+			g_warning("userinfo-module: User image error: %s", error->message);
+			g_error_free(error);
+		}
+	} else g_warning("userinfo-module: User image not found");
+
 	if(pixbuf == NULL) {
-		g_warning("userinfo-module: User image error: %s", error->message);
-		gtk_container_remove(GTK_CONTAINER(ctx->window_box), USERINFO(ctx)->user_icon);
-		return;
+		GtkIconTheme *theme = gtk_icon_theme_get_default();
+		GtkIconInfo *icon =
+			gtk_icon_theme_lookup_icon(theme, "avatar-default-symbolic", image_size, GTK_ICON_LOOKUP_FORCE_SIZE);
+		GError *error = NULL;
+		pixbuf = gtk_icon_info_load_icon(icon, &error);
+		if(error != NULL) {
+			g_warning("userinfo-module: User icon error: %s", error->message);
+			g_error_free(error);
+		}
 	}
 
 	cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, image_size, image_size);
