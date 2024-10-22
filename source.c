@@ -42,6 +42,10 @@ GOptionEntry module_entries[] = {
 };
 
 static void window_set_userinfo(ActUser* user, struct Window *ctx) {
+	gboolean loaded = FALSE;
+	g_object_get(user, "is-loaded", &loaded, NULL);
+	if(loaded != TRUE) return;
+
 	const char *name = act_user_get_real_name(user);
 	if(name == NULL) {
 		g_warning("userinfo-module: User name not found");
@@ -82,18 +86,12 @@ static void window_set_userinfo(ActUser* user, struct Window *ctx) {
 	gtk_image_set_from_surface(GTK_IMAGE(USERINFO(ctx)->user_icon), surface);
 }
 
-static void window_user_loaded(ActUser* user, struct Window *ctx) {
-	gboolean loaded = FALSE;
-	g_object_get(user, "is-loaded", &loaded, NULL);
-	if(loaded == TRUE) window_set_userinfo(user, ctx);
-}
-
 static void gtklock_set_userinfo(ActUser* user, struct GtkLock *gtklock) {
 	if(gtklock->focused_window != NULL) window_set_userinfo(user, gtklock->focused_window);
 }
 
 static void gtklock_user_loaded(ActUser* user, GParamSpec *spec, struct GtkLock *gtklock) {
-	if(gtklock->focused_window != NULL) window_user_loaded(user, gtklock->focused_window);
+	if(gtklock->focused_window != NULL) window_set_userinfo(user, gtklock->focused_window);
 }
 
 static void init_user_manager(struct GtkLock *gtklock) {
@@ -191,6 +189,7 @@ void on_focus_change(struct GtkLock *gtklock, struct Window *win, struct Window 
 
 void on_window_destroy(struct GtkLock *gtklock, struct Window *ctx) {
 	if(MODULE_DATA(ctx) != NULL) {
+		gtk_widget_destroy(USERINFO(ctx)->user_revealer);
 		g_free(MODULE_DATA(ctx));
 		MODULE_DATA(ctx) = NULL;
 	}
