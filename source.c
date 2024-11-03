@@ -157,11 +157,6 @@ static void setup_userinfo(struct Window *ctx) {
 	gtk_widget_show_all(USERINFO(ctx)->user_revealer);
 }
 
-void g_module_unload(GModule *m) {
-	g_object_unref(act_user);
-	g_object_unref(act_manager);
-}
-
 void on_activation(struct GtkLock *gtklock, int id) {
 	self_id = id;
 
