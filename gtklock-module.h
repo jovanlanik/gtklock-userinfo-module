@@ -1,5 +1,5 @@
 // gtklock-userinfo-module
-// Copyright (c) 2024 Jovan Lanik
+// Copyright (c) 2026 Jovan Lanik
 
 // Module header
 
@@ -56,8 +56,11 @@ struct GtkLock {
 	char *layout_path;
 	char *lock_command;
 	char *unlock_command;
+	char *idle_command;
 
 	GArray *modules;
+
+	gboolean test_mode;
 };
 
 const gchar *g_module_check_init(GModule *m);
@@ -75,7 +78,7 @@ void on_window_destroy(struct GtkLock *gtklock, struct Window *win);
 
 MIT Licence
 
-Copyright (c) 2024 Jovan Lanik <jox969@gmail.com>
+Copyright (c) 2022 Jovan Lanik <jox969@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
